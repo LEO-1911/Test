@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Urlaubsplanung</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Urlaubsplanung</h1>
+    <form id="vacation-form">
+      <label for="employee">Mitarbeiter</label>
+      <input type="text" id="employee" required>
+      <label for="start">Startdatum</label>
+      <input type="date" id="start" required>
+      <label for="end">Enddatum</label>
+      <input type="date" id="end" required>
+      <button type="submit">Urlaub hinzufügen</button>
+    </form>
+
+    <table id="vacation-table">
+      <thead>
+        <tr>
+          <th>Mitarbeiter</th>
+          <th>Start</th>
+          <th>Ende</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
