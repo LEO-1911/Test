@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEO Dashboard - Bento</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+  <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .checkbox-custom {
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .checkbox-custom:checked {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+    }
+
+    .checkbox-custom:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .progress-ring {
+      transition: stroke-dashoffset 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    const { motion, AnimatePresence } = window.Motion;
+    const {
+      RadialBarChart,
+      RadialBar,
+      RadarChart,
+      PolarGrid,
+      PolarAngleAxis,
+      PolarRadiusAxis,
+      Radar,
+      BarChart,
+      Bar,
+      XAxis,
+      YAxis,
+      ResponsiveContainer,
+      Cell
+    } = window.Recharts;
+
+    // Lucide Icons as SVG components
+    const CheckCircle = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    );
+
+    const TrendingUp = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
+      </svg>
+    );
+
+    const Target = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="6"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+      </svg>
+    );
+
+    const Zap = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+    );
+
+    const Book = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+    );
+
+    const Headphones = ({ className = "", size = 24 }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+      </svg>
+    );
+
+    // Circular Progress Component
+    const CircularProgress = ({ percentage, size = 200 }) => {
+      const strokeWidth = 12;
+      const radius = (size - strokeWidth) / 2;
+      const circumference = radius * 2 * Math.PI;
+      const offset = circumference - (percentage / 100) * circumference;
+
+      return (
+        <div className="relative" style={{ width: size, height: size }}>
+          <svg width={size} height={size} className="transform -rotate-90">
+            {/* Background circle */}
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth={strokeWidth}
+              fill="none"
+            />
+            {/* Progress circle */}
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="url(#gradient)"
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              className="progress-ring"
+            />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#667eea" />
+                <stop offset="100%" stopColor="#764ba2" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center flex-col">
+            <span className="text-5xl font-bold text-white">{Math.round(percentage)}%</span>
+          </div>
+        </div>
+      );
+    };
+
+    // Main Dashboard Component
+    const CEODashboard = () => {
+      const [habits, setHabits] = useState(() => {
+        const saved = localStorage.getItem('ceo-habits');
+        return saved ? JSON.parse(saved) : [
+          { id: 1, title: 'Morning meditation', icon: '🧘', completed: false, category: 'Health' },
+          { id: 2, title: 'Get a promotion', icon: '🎯', completed: false, category: 'Career' },
+          { id: 3, title: 'Weekly reflection', icon: '📝', completed: false, category: 'Growth' },
+          { id: 4, title: '6 a.m. wake-up', icon: '⏰', completed: false, category: 'Health' },
+          { id: 5, title: 'Train 5 days/week', icon: '💪', completed: false, category: 'Health' },
+          { id: 6, title: 'Read 30min daily', icon: '📚', completed: false, category: 'Growth' },
+        ];
+      });
+
+      const [lifeBalance] = useState([
+        { subject: 'Family', value: 75, fullMark: 100 },
+        { subject: 'Health', value: 85, fullMark: 100 },
+        { subject: 'Fun', value: 60, fullMark: 100 },
+        { subject: 'Career', value: 90, fullMark: 100 },
+        { subject: 'Growth', value: 80, fullMark: 100 },
+      ]);
+
+      const [monthlyProgress] = useState([
+        { month: 'Feb', value: 25 },
+        { month: 'Mar', value: 76 },
+        { month: 'Apr', value: 39 },
+        { month: 'May', value: 52 },
+      ]);
+
+      const [readingPlan] = useState([
+        { id: 1, type: 'book', title: 'Grit', author: 'Angela Duckworth', progress: 72 },
+        { id: 2, type: 'podcast', title: 'Gaining Courage', author: 'Ryan Holiday', progress: 100 },
+        { id: 3, type: 'book', title: 'Atomic Habits', author: 'James Clear', progress: 86 },
+      ]);
+
+      useEffect(() => {
+        localStorage.setItem('ceo-habits', JSON.stringify(habits));
+      }, [habits]);
+
+      const toggleHabit = (id) => {
+        setHabits(prev => prev.map(habit =>
+          habit.id === id ? { ...habit, completed: !habit.completed } : habit
+        ));
+      };
+
+      const completionPercentage = useMemo(() => {
+        const completed = habits.filter(h => h.completed).length;
+        return (completed / habits.length) * 100;
+      }, [habits]);
+
+      const completedCount = habits.filter(h => h.completed).length;
+      const totalCount = habits.length;
+
+      const lifeScore = useMemo(() => {
+        const avg = lifeBalance.reduce((acc, item) => acc + item.value, 0) / lifeBalance.length;
+        return Math.round(avg);
+      }, [lifeBalance]);
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-950 via-[#050510] to-[#0a0a1a] p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8 md:mb-12"
+            >
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-3 tracking-tight leading-tight">
+                Conquer Your<br />
+                Schedule Like A CEO
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-400 tracking-tight">
+                Replace procrastination with micro-rituals
+              </p>
+            </motion.div>
+
+            {/* Bento Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+
+              {/* Tasks Completed - Circular Progress */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-500/20">
+                    <Target className="text-purple-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Tasks Completed</h3>
+                </div>
+
+                <div className="flex flex-col items-center justify-center">
+                  <CircularProgress percentage={completionPercentage} size={180} />
+                  <div className="mt-6 text-center">
+                    <p className="text-4xl font-bold text-white mb-1">
+                      {completedCount}/{totalCount}
+                    </p>
+                    <p className="text-sm text-gray-400 uppercase tracking-wider">Routines on Track</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Micro-Rituals List */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
+                    <Zap className="text-blue-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Micro-Rituals</h3>
+                </div>
+
+                <div className="space-y-3">
+                  {habits.map((habit, index) => (
+                    <motion.div
+                      key={habit.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + index * 0.05 }}
+                      className={`flex items-center gap-4 p-4 rounded-xl transition-all cursor-pointer ${
+                        habit.completed
+                          ? 'bg-white/5 border border-purple-500/30'
+                          : 'bg-white/[0.02] border border-white/5 hover:bg-white/5'
+                      }`}
+                      onClick={() => toggleHabit(habit.id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={habit.completed}
+                        onChange={() => toggleHabit(habit.id)}
+                        className="checkbox-custom"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-2xl">{habit.icon}</span>
+                      <div className="flex-1">
+                        <p className={`font-medium ${habit.completed ? 'text-gray-400 line-through' : 'text-white'}`}>
+                          {habit.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">{habit.category}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Your Progress - Bar Chart */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20">
+                    <TrendingUp className="text-green-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Your Progress</h3>
+                </div>
+
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={monthlyProgress}>
+                    <XAxis
+                      dataKey="month"
+                      stroke="rgba(255,255,255,0.3)"
+                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                    />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {monthlyProgress.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`url(#barGradient${index})`} />
+                      ))}
+                    </Bar>
+                    <defs>
+                      {monthlyProgress.map((entry, index) => (
+                        <linearGradient key={index} id={`barGradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#667eea" stopOpacity={0.8} />
+                          <stop offset="100%" stopColor="#764ba2" stopOpacity={0.4} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+
+                <div className="grid grid-cols-4 gap-2 mt-4">
+                  {monthlyProgress.map((item, index) => (
+                    <div key={index} className="text-center">
+                      <p className="text-2xl font-bold text-white">{item.value}%</p>
+                      <p className="text-xs text-gray-500">{item.month}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Life Balance - Radar Chart */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20">
+                    <CheckCircle className="text-pink-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Life Balance</h3>
+                </div>
+
+                <ResponsiveContainer width="100%" height={220}>
+                  <RadarChart data={lifeBalance}>
+                    <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                    <PolarAngleAxis
+                      dataKey="subject"
+                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11 }}
+                    />
+                    <PolarRadiusAxis
+                      angle={90}
+                      domain={[0, 100]}
+                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
+                    />
+                    <Radar
+                      name="Balance"
+                      dataKey="value"
+                      stroke="#667eea"
+                      fill="#667eea"
+                      fillOpacity={0.5}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </motion.div>
+
+              {/* Life Score */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1 flex flex-col items-center justify-center"
+              >
+                <div className="flex items-center gap-3 mb-6 w-full">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20">
+                    <Target className="text-amber-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Your Life Score</h3>
+                </div>
+
+                <div className="relative">
+                  <CircularProgress percentage={lifeScore} size={160} />
+                </div>
+
+                <p className="text-sm text-gray-400 mt-4 text-center">
+                  Based on your life balance metrics
+                </p>
+              </motion.div>
+
+              {/* Reading Plan */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 }}
+                className="glass-card p-6 md:p-8 lg:col-span-1"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+                    <Book className="text-violet-400" size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Reading Plan</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {readingPlan.map((item, index) => (
+                    <div key={item.id} className="space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-white/5 mt-1">
+                          {item.type === 'book' ? (
+                            <Book size={16} className="text-gray-400" />
+                          ) : (
+                            <Headphones size={16} className="text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-white text-sm">{item.title}</p>
+                          <p className="text-xs text-gray-500">{item.author}</p>
+                        </div>
+                        <span className="text-sm font-semibold text-purple-400">{item.progress}%</span>
+                      </div>
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden ml-11">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${item.progress}%` }}
+                          transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
+                          className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+            </div>
+
+            {/* CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-8 md:mt-12 text-center"
+            >
+              <button className="glass-card px-8 py-4 text-lg font-semibold text-white hover:scale-105 transition-transform inline-flex items-center gap-3">
+                Become a CEO of Your Life
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<CEODashboard />);
+  </script>
+</body>
+</html>
