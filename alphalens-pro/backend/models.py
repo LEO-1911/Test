@@ -88,6 +88,30 @@ class MarketStateRow(Base):
     as_of: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class ScoreRow(Base):
+    """Score-Persistenz mit vollem Breakdown (USP 2): eine Zeile je Komponente/Säule/
+    Composite/Risiko, inkl. Gewicht, Missing-Flag und Klartext-Begründung fürs
+    "Why?"-Panel. Scores sind abgeleitete Daten — Neuberechnung ersetzt den Tag."""
+
+    __tablename__ = "scores"
+    __table_args__ = (
+        UniqueConstraint("ticker", "date", "kind", "name"),
+        Index("ix_scores_date_kind", "date", "kind"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ticker: Mapped[str] = mapped_column(String, index=True)
+    date: Mapped[date] = mapped_column(Date)
+    kind: Mapped[str] = mapped_column(String)  # composite|pillar|component|risk
+    name: Mapped[str] = mapped_column(String)  # z.B. "value" oder "value.pe_vs_sector"
+    value: Mapped[float] = mapped_column(Float)
+    raw_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    weight: Mapped[float | None] = mapped_column(Float, nullable=True)
+    missing: Mapped[int] = mapped_column(Integer, default=0)  # 1 = neutral gewertet
+    detail: Mapped[str] = mapped_column(String, default="")
+    as_of: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class FetchLog(Base):
     """Buchführung pro (ticker, kind): letzter Erfolg/Fehler -> Inkremental-Fetch,
     Stale-Data-Badge und Fehlertoleranz-Auswertung."""

@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/PriceChart.tsx","./src/components/ScoreBar.tsx","./src/components/StatCard.tsx","./src/lib/api.ts","./src/pages/InstrumentPage.tsx","./src/pages/MarketsPage.tsx","./src/pages/ScreenerPage.tsx"],"version":"5.9.3"}
