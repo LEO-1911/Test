@@ -1,0 +1,72 @@
+# Analyse-Universum. Indizes werden per Wikipedia-Refresh geladen (make update);
+# solange kein Refresh gelungen ist, gilt die eingebaute Seed-Liste je Index.
+# Index-Mitgliedschaften werden mit Gültigkeitszeitraum gespeichert (Point-in-Time).
+
+indices:
+  sp500:
+    name: "S&P 500"
+    region: US
+    currency: USD
+    source_url: "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    ticker_column: ["Symbol"]
+    ticker_suffix: ""
+  nasdaq100:
+    name: "Nasdaq 100"
+    region: US
+    currency: USD
+    source_url: "https://en.wikipedia.org/wiki/Nasdaq-100"
+    ticker_column: ["Ticker", "Symbol"]
+    ticker_suffix: ""
+  dax40:
+    name: "DAX 40"
+    region: EU
+    currency: EUR
+    source_url: "https://en.wikipedia.org/wiki/DAX"
+    ticker_column: ["Ticker", "Ticker symbol"]
+    ticker_suffix: ".DE"
+  mdax:
+    name: "MDAX"
+    region: EU
+    currency: EUR
+    source_url: "https://en.wikipedia.org/wiki/MDAX"
+    ticker_column: ["Symbol", "Ticker", "Ticker symbol"]
+    ticker_suffix: ".DE"
+  eurostoxx50:
+    name: "EuroStoxx 50"
+    region: EU
+    currency: EUR
+    source_url: "https://en.wikipedia.org/wiki/EURO_STOXX_50"
+    ticker_column: ["Ticker"]
+    ticker_suffix: ""
+
+# Kuratierte ETFs (UCITS + US). asset_type=etf bekommt den ETF-Risiko-Score.
+etfs:
+  - {ticker: VWCE.DE, name: "Vanguard FTSE All-World UCITS", currency: EUR}
+  - {ticker: IWDA.AS, name: "iShares Core MSCI World UCITS", currency: EUR}
+  - {ticker: EUNL.DE, name: "iShares Core MSCI World UCITS (Xetra)", currency: EUR}
+  - {ticker: VUSA.AS, name: "Vanguard S&P 500 UCITS", currency: EUR}
+  - {ticker: EXS1.DE, name: "iShares Core DAX UCITS", currency: EUR}
+  - {ticker: SPY, name: "SPDR S&P 500 ETF Trust", currency: USD}
+  - {ticker: QQQ, name: "Invesco QQQ Trust", currency: USD}
+  - {ticker: IWM, name: "iShares Russell 2000 ETF", currency: USD}
+
+# Krypto (optional, via yfinance)
+crypto:
+  enabled: true
+  tickers: [BTC-USD, ETH-USD]
+
+# Manuell erweiterbare Watchlist — wird IMMER priorisiert aktualisiert.
+watchlist:
+  - AAPL
+  - SAP.DE
+  - VWCE.DE
+
+# Markt-Zustandsdaten (Regime-Gate, EUR-Umrechnung)
+market_symbols:
+  vix: "^VIX"
+  sp500_index: "^GSPC"
+  eurostoxx_index: "^STOXX50E"
+  eurusd: "EURUSD=X"
+
+history_years: 5          # Backfill-Tiefe bei Erstaufnahme
+fundamentals_batch_days: 7  # Universum rolliert in ~N Tagen einmal komplett durch

@@ -1,0 +1,16 @@
+# Transaktionskosten-Defaults für Backtest UND Paper-Portfolio (konservativ-realistisch).
+spread_bps:
+  us_large_cap: 10
+  eu_large_cap: 12
+  eu_mid_cap: 20
+  etf: 8
+  crypto: 25
+fees:
+  per_trade_eur: 1.00
+  pct_of_volume: 0.0
+slippage_bps: 5              # zusätzlich zum halben Spread bei Market-Ausführung
+
+paper_portfolio:
+  start_capital_eur: 100000
+  base_currency: EUR
+  benchmark: ["^GSPC", "^STOXX50E"]   # S&P 500 (EUR-bereinigt) und EuroStoxx 50

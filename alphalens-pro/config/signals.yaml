@@ -1,0 +1,34 @@
+# Signal-Engine ("SwingMax, aber ehrlich") — alle Parameter der 4 Long-Setups.
+setups:
+  mean_reversion:
+    rsi_period: 14
+    rsi_oversold: 30
+    trend_filter: close_above_ma200
+  breakout:
+    lookback_days: 252         # 52-Wochen-Hoch
+    volume_factor: 1.5         # Volumen > 1.5x 20-Tage-Schnitt
+  pullback_ma50:
+    trend_filter: ma50_above_ma200
+    max_dist_ma50_pct: 2.0
+  earnings_momentum:
+    min_surprise_pct: 5.0
+    max_days_after_earnings: 5
+
+position_sizing:
+  kelly_fraction: 0.25         # Fractional Kelly
+  max_position_pct: 25.0       # harte Obergrenze je Position
+  target_volatility_pct: 20.0  # Volatilitäts-Skalierung (annualisiert)
+  stop_atr_multiple: 2.0       # Stop-Loss = Entry − 2 x ATR(14)
+
+regime_gate:
+  # Risk-off, wenn >= 2 der 3 Kriterien reißen; Neutral bei genau 1.
+  vix_level: 25
+  vix_percentile_1y: 0.80
+  breadth_min_pct_above_ma200: 40
+  index_trend: close_above_ma200   # S&P 500 und EuroStoxx 50
+  scaling: {risk_on: 1.0, neutral: 0.6, risk_off: 0.25}
+
+calibration:
+  min_samples_calibrated: 200  # ab hier isotonische Regression, davor "unkalibriert"-Badge
+  laplace_alpha: 1.0
+  rolling_window: 500

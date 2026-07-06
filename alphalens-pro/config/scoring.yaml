@@ -1,0 +1,51 @@
+# Composite Score 0–100 aus vier Säulen. Gewichte müssen sich zu 1.0 addieren.
+# Jede Teilkomponente wird einzeln gespeichert und ist im UI aufklappbar (Erklärbarkeit).
+pillars:
+  value:
+    weight: 0.30
+    components:          # Multiples relativ zu Sektor-Median und eigener 5J-Historie
+      pe_vs_sector: 0.30
+      ev_ebitda_vs_sector: 0.25
+      pb_vs_sector: 0.15
+      pe_vs_own_history: 0.30
+  quality:
+    weight: 0.25
+    components:
+      roe: 0.25
+      roic: 0.25
+      margin_stability: 0.20
+      leverage: 0.15       # Debt/EBITDA, invers
+      fcf_conversion: 0.15
+  momentum:
+    weight: 0.25
+    components:
+      ret_3m_riskadj: 0.20
+      ret_6m_riskadj: 0.25
+      ret_12m_riskadj: 0.25
+      dist_52w_high: 0.15
+      ma_signal: 0.10      # Kurs vs MA50/MA200
+      rsi: 0.05
+  growth:
+    weight: 0.20
+    components:
+      revenue_growth: 0.30
+      eps_growth: 0.30
+      revision_trend: 0.20
+      surprise_history: 0.20
+
+# Fehlende Datenpunkte: Komponente erhält Neutralwert 50 und wird als "fehlend" markiert —
+# nie stiller Ausfall, die Lücke ist im "Why?"-Panel sichtbar.
+missing_data_neutral: 50
+
+risk_score:              # 1 (defensiv) – 10 (spekulativ)
+  stock:
+    volatility_1y: 0.30
+    max_drawdown_3y: 0.25
+    beta: 0.15
+    balance_sheet: 0.20  # Debt/EBITDA, Zinsdeckung
+    liquidity: 0.10      # Ø-Handelsvolumen
+  etf:
+    volatility_1y: 0.35
+    max_drawdown_3y: 0.30
+    ter: 0.15
+    diversification: 0.20

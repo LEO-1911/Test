@@ -1,0 +1,20 @@
+# Zeitsteuerung der Jobs.
+daily_update:
+  time: "07:30"                # Werktags, lokale Zeit
+  timezone: Europe/Berlin
+  weekdays_only: true
+
+weekly_picks:
+  weekday: mon
+  time: "13:00"                # vor US-Börsenöffnung (15:30 MEZ/MESZ)
+  timezone: Europe/Berlin
+
+stale_data_hours: 30           # Daten älter als N Stunden -> Stale-Badge im UI
+
+email:
+  enabled: false               # Daily Brief per Mail (SMTP) — default aus
+  smtp_host: ""
+  smtp_port: 587
+  smtp_user: ""
+  smtp_password_env: SMTP_PASSWORD
+  to: ""

@@ -1,0 +1,17 @@
+# Claude-API-Nutzung mit strikter Kostenkontrolle.
+models:
+  routine: claude-haiku-4-5    # News-Sentiment, Klassifikation, Screener-Übersetzung
+  deep: claude-sonnet-5        # Deep-Dives, Daily-Brief-Text, Chat-Agent
+
+budget:
+  daily_usd: 1.00              # HARD-STOP: bei Überschreitung pausieren KI-Features,
+                               # alle Quant-Features laufen uneingeschränkt weiter.
+  warn_at_pct: 80
+
+batching:
+  news_sentiment_batch_size: 25
+  use_batches_api: true        # -50% Kosten für nicht zeitkritische Jobs
+
+caching:
+  reanalyze_only_on_change: true  # Analysen werden per Input-Hash gecacht
+  prompt_caching: true            # System-Prompts (Chat, Deep-Dive) cachen
