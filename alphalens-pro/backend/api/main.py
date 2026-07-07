@@ -160,6 +160,67 @@ def market_state() -> list[dict[str, Any]]:
         ]
 
 
+@app.get("/api/ledger/verify")
+def ledger_verify() -> dict[str, Any]:
+    """Rechnet die komplette Hash-Chain nach — die Glaubwürdigkeitsprüfung."""
+    from backend.ledger.chain import verify_chain
+
+    with session_scope() as session:
+        return verify_chain(session)
+
+
+@app.get("/api/ledger/entries")
+def ledger_entries(limit: int = 100, entry_type: str = "") -> list[dict[str, Any]]:
+    from backend.ledger.chain import entry_payload
+    from backend.models import LedgerEntry
+
+    with session_scope() as session:
+        stmt = select(LedgerEntry).order_by(LedgerEntry.id.desc()).limit(limit)
+        if entry_type:
+            stmt = stmt.where(LedgerEntry.entry_type == entry_type)
+        entries = list(session.scalars(stmt))
+        # Outcome-Ergebnisse den Signalen zuordnen (für die Tabellen-Anzeige)
+        outcome_by_ref: dict[int, dict[str, Any]] = {}
+        for e in session.scalars(select(LedgerEntry).where(LedgerEntry.entry_type == "outcome")):
+            if e.ref_id is not None:
+                outcome_by_ref[e.ref_id] = entry_payload(e)
+        return [
+            {
+                "id": e.id, "ts_utc": e.ts_utc.isoformat(), "entry_type": e.entry_type,
+                "ticker": e.ticker, "payload": entry_payload(e),
+                "price_at_creation": e.price_at_creation, "probability": e.probability,
+                "ref_id": e.ref_id, "entry_hash": e.entry_hash, "prev_hash": e.prev_hash,
+                "outcome": outcome_by_ref.get(e.id),
+            }
+            for e in entries
+        ]
+
+
+@app.get("/api/ledger/stats")
+def ledger_stats() -> dict[str, Any]:
+    from backend.ledger.chain import verify_chain
+    from backend.ledger.outcomes import stats_by_signal_type
+
+    with session_scope() as session:
+        return {"chain": verify_chain(session), "by_signal_type": stats_by_signal_type(session)}
+
+
+@app.get("/api/ledger/reliability")
+def ledger_reliability(signal_type: str = "") -> dict[str, Any]:
+    """Reliability-Diagramm: mittlere Prognose vs. beobachtete Trefferquote je Bin."""
+    from backend.ledger.calibration import brier_score, reliability_bins
+    from backend.ledger.outcomes import reliability_pairs
+
+    with session_scope() as session:
+        pairs = reliability_pairs(session, signal_type or None)
+        return {
+            "signal_type": signal_type or "alle",
+            "n": len(pairs),
+            "brier": brier_score(pairs),
+            "bins": reliability_bins(pairs),
+        }
+
+
 @app.get("/api/screener")
 def screener(
     q: str = "", asset_type: str = "", sector: str = "",

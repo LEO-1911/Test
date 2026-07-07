@@ -3,6 +3,7 @@ import { api, type Health } from "./lib/api";
 import MarketsPage from "./pages/MarketsPage";
 import ScreenerPage from "./pages/ScreenerPage";
 import InstrumentPage from "./pages/InstrumentPage";
+import TrackRecordPage from "./pages/TrackRecordPage";
 
 const NAV_ITEMS = [
   { id: "brief", label: "Daily Brief", milestone: "MS11" },
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
   { id: "earnings", label: "Earnings", milestone: "MS8" },
   { id: "backtest", label: "Backtest", milestone: "MS6" },
   { id: "paper", label: "Paper-Portfolio", milestone: "MS7" },
-  { id: "track", label: "Track Record", milestone: "MS3" },
+  { id: "track", label: "Track Record", milestone: null },
   { id: "chat", label: "Chat-Agent", milestone: "MS10" },
   { id: "settings", label: "Einstellungen", milestone: "MS11" },
 ];
@@ -88,6 +89,8 @@ export default function App() {
     content = <MarketsPage onSelect={openDetail} />;
   } else if (active === "screener") {
     content = <ScreenerPage onSelect={openDetail} />;
+  } else if (active === "track") {
+    content = <TrackRecordPage />;
   } else {
     content = <ComingSoon milestone={current.milestone ?? ""} />;
   }

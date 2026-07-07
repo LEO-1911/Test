@@ -77,6 +77,52 @@ export type InstrumentDetail = {
   }[];
 };
 
+export type ChainStatus = {
+  valid: boolean;
+  entries: number;
+  first_broken_id: number | null;
+  error: string | null;
+};
+
+export type SignalTypeStats = {
+  signal_type: string;
+  n_signals: number;
+  n_closed: number;
+  n_success: number;
+  hit_rate: number | null;
+  hit_rate_laplace: number;
+  avg_return_pct: number | null;
+  brier: number | null;
+  calibration: { calibrated: boolean; n_closed: number; min_required: number; label: string };
+};
+
+export type LedgerEntryView = {
+  id: number;
+  ts_utc: string;
+  entry_type: string;
+  ticker: string;
+  payload: Record<string, unknown>;
+  price_at_creation: number | null;
+  probability: number | null;
+  ref_id: number | null;
+  entry_hash: string;
+  prev_hash: string;
+  outcome: Record<string, unknown> | null;
+};
+
+export type ReliabilityData = {
+  signal_type: string;
+  n: number;
+  brier: number | null;
+  bins: {
+    bin_low: number;
+    bin_high: number;
+    mean_predicted: number;
+    observed_rate: number;
+    count: number;
+  }[];
+};
+
 async function get<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
@@ -94,6 +140,11 @@ export const api = {
     get<PriceBar[]>(`/api/instruments/${encodeURIComponent(ticker)}/prices?days=${days}`),
   instrument: (ticker: string) =>
     get<InstrumentDetail>(`/api/instruments/${encodeURIComponent(ticker)}`),
+  ledgerStats: () =>
+    get<{ chain: ChainStatus; by_signal_type: SignalTypeStats[] }>("/api/ledger/stats"),
+  ledgerEntries: (limit = 100) => get<LedgerEntryView[]>(`/api/ledger/entries?limit=${limit}`),
+  ledgerReliability: (signalType = "") =>
+    get<ReliabilityData>(`/api/ledger/reliability?signal_type=${signalType}`),
 };
 
 export function fmt(value: number | null | undefined, digits = 1): string {

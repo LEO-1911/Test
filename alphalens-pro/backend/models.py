@@ -6,7 +6,17 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Float, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    DDL,
+    Date,
+    DateTime,
+    Float,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    event,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.db import Base
@@ -110,6 +120,45 @@ class ScoreRow(Base):
     missing: Mapped[int] = mapped_column(Integer, default=0)  # 1 = neutral gewertet
     detail: Mapped[str] = mapped_column(String, default="")
     as_of: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class LedgerEntry(Base):
+    """Unbestechliches Track-Record-Ledger (USP 3): append-only Hash-Chain.
+
+    entry_hash = SHA-256(prev_hash ‖ kanonische Serialisierung aller Fachfelder).
+    UPDATE/DELETE sind per SQLite-Trigger blockiert (siehe DDL unten); selbst wer
+    die Trigger entfernt und direkt in der DB manipuliert, bricht die Kette —
+    verify_chain() rechnet jede Verknüpfung nach. Korrekturen und Ergebnisse
+    sind immer NEUE Einträge (entry_type=outcome/correction mit ref_id)."""
+
+    __tablename__ = "ledger_entries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts_utc: Mapped[datetime] = mapped_column(DateTime)
+    entry_type: Mapped[str] = mapped_column(String, index=True)  # signal|pick|outcome|correction
+    ticker: Mapped[str] = mapped_column(String, index=True)
+    payload_json: Mapped[str] = mapped_column(String)  # kanonisches JSON (sort_keys)
+    price_at_creation: Mapped[float | None] = mapped_column(Float, nullable=True)
+    probability: Mapped[float | None] = mapped_column(Float, nullable=True)  # für Brier-Score
+    ref_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # Outcome -> Signal
+    prev_hash: Mapped[str] = mapped_column(String)
+    entry_hash: Mapped[str] = mapped_column(String, unique=True)
+
+
+# Append-only-Schutz auf DB-Ebene: Trigger feuern in JEDER Verbindung, auch außerhalb
+# der App. Werden sie von einem Angreifer entfernt, schlägt verify_chain() an.
+event.listen(
+    LedgerEntry.__table__, "after_create",
+    DDL("CREATE TRIGGER IF NOT EXISTS ledger_entries_no_update "
+        "BEFORE UPDATE ON ledger_entries "
+        "BEGIN SELECT RAISE(ABORT, 'Ledger ist append-only: UPDATE verboten'); END"),
+)
+event.listen(
+    LedgerEntry.__table__, "after_create",
+    DDL("CREATE TRIGGER IF NOT EXISTS ledger_entries_no_delete "
+        "BEFORE DELETE ON ledger_entries "
+        "BEGIN SELECT RAISE(ABORT, 'Ledger ist append-only: DELETE verboten'); END"),
+)
 
 
 class FetchLog(Base):
