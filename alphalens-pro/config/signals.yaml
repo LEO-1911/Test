@@ -1,31 +1,48 @@
-# Signal-Engine ("SwingMax, aber ehrlich") — alle Parameter der 4 Long-Setups.
+# Signal-Engine ("SwingMax, aber ehrlich") — alle Parameter der Long-Setups.
+# Jedes Setup: Stop = Entry - stop_atr_multiple x ATR(14),
+#              Ziel = Entry + reward_multiple x (Entry - Stop).
 setups:
   mean_reversion:
     rsi_period: 14
     rsi_oversold: 30
     trend_filter: close_above_ma200
+    reward_multiple: 1.5
+    horizon_days: 10
   breakout:
     lookback_days: 252         # 52-Wochen-Hoch
     volume_factor: 1.5         # Volumen > 1.5x 20-Tage-Schnitt
+    reward_multiple: 2.0
+    horizon_days: 20
   pullback_ma50:
     trend_filter: ma50_above_ma200
     max_dist_ma50_pct: 2.0
+    reward_multiple: 2.0
+    horizon_days: 15
   earnings_momentum:
+    enabled: false             # Datenquelle (Earnings-Historie) kommt in MS8
     min_surprise_pct: 5.0
     max_days_after_earnings: 5
+    reward_multiple: 2.0
+    horizon_days: 15
 
 position_sizing:
   kelly_fraction: 0.25         # Fractional Kelly
   max_position_pct: 25.0       # harte Obergrenze je Position
   target_volatility_pct: 20.0  # Volatilitäts-Skalierung (annualisiert)
-  stop_atr_multiple: 2.0       # Stop-Loss = Entry − 2 x ATR(14)
+  stop_atr_multiple: 2.0       # Stop-Loss = Entry - 2 x ATR(14)
+
+picker:
+  top_n: 10                    # wöchentliche Top-Picks nach Composite Score
+  horizon_days: 5              # Bewertungsfenster (Handelstage)
+  stop_atr_multiple: 2.5
+  min_composite: 55            # unter diesem Score wird gar nicht erst gepickt
 
 regime_gate:
   # Risk-off, wenn >= 2 der 3 Kriterien reißen; Neutral bei genau 1.
   vix_level: 25
   vix_percentile_1y: 0.80
   breadth_min_pct_above_ma200: 40
-  index_trend: close_above_ma200   # S&P 500 und EuroStoxx 50
+  index_trend: close_above_ma200   # Leitindex S&P 500 (EuroStoxx informativ)
   scaling: {risk_on: 1.0, neutral: 0.6, risk_off: 0.25}
 
 calibration:

@@ -161,6 +161,21 @@ event.listen(
 )
 
 
+class AiUsageRow(Base):
+    """Kosten-Buchführung jedes Claude-API-Aufrufs — Grundlage des Tagesbudget-
+    Hard-Stops (config/ai.yaml). Wird im UI unter Einstellungen angezeigt."""
+
+    __tablename__ = "ai_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ts_utc: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    model: Mapped[str] = mapped_column(String)
+    purpose: Mapped[str] = mapped_column(String)  # pick_deep_dive|news_sentiment|chat|...
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class FetchLog(Base):
     """Buchführung pro (ticker, kind): letzter Erfolg/Fehler -> Inkremental-Fetch,
     Stale-Data-Badge und Fehlertoleranz-Auswertung."""

@@ -4,11 +4,13 @@ import MarketsPage from "./pages/MarketsPage";
 import ScreenerPage from "./pages/ScreenerPage";
 import InstrumentPage from "./pages/InstrumentPage";
 import TrackRecordPage from "./pages/TrackRecordPage";
+import SignalsPage from "./pages/SignalsPage";
+import PickerPage from "./pages/PickerPage";
 
 const NAV_ITEMS = [
   { id: "brief", label: "Daily Brief", milestone: "MS11" },
-  { id: "picker", label: "Stock Picker", milestone: "MS5" },
-  { id: "signals", label: "Signale", milestone: "MS5" },
+  { id: "picker", label: "Stock Picker", milestone: null },
+  { id: "signals", label: "Signale", milestone: null },
   { id: "screener", label: "Screener", milestone: null },
   { id: "markets", label: "Märkte", milestone: null },
   { id: "whales", label: "Whales", milestone: "MS9" },
@@ -91,6 +93,10 @@ export default function App() {
     content = <ScreenerPage onSelect={openDetail} />;
   } else if (active === "track") {
     content = <TrackRecordPage />;
+  } else if (active === "signals") {
+    content = <SignalsPage onSelect={openDetail} />;
+  } else if (active === "picker") {
+    content = <PickerPage onSelect={openDetail} />;
   } else {
     content = <ComingSoon milestone={current.milestone ?? ""} />;
   }

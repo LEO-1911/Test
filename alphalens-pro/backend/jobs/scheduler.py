@@ -28,6 +28,24 @@ def build_scheduler() -> BlockingScheduler:
         id="daily_update",
         misfire_grace_time=3600,
     )
+
+    picks_cfg = load_config("schedule")["weekly_picks"]
+    p_hour, p_minute = str(picks_cfg.get("time", "13:00")).split(":")
+
+    def _run_picks() -> None:
+        from backend.db import session_scope
+        from backend.signals.picker import run_weekly_picks
+
+        with session_scope() as session:
+            log.info("Weekly picks: %s", run_weekly_picks(session))
+
+    scheduler.add_job(
+        _run_picks,
+        CronTrigger(day_of_week=str(picks_cfg.get("weekday", "mon")),
+                    hour=int(p_hour), minute=int(p_minute)),
+        id="weekly_picks",
+        misfire_grace_time=3600,
+    )
     return scheduler
 
 

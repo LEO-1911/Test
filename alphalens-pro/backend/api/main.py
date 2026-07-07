@@ -160,6 +160,58 @@ def market_state() -> list[dict[str, Any]]:
         ]
 
 
+@app.get("/api/regime")
+def regime() -> dict[str, Any]:
+    """Aktuelles Marktregime mit allen Kriterien und Begründungen."""
+    from backend.signals.regime import current_regime
+
+    with session_scope() as session:
+        return current_regime(session)
+
+
+@app.get("/api/signals")
+def signals_list(limit: int = 100) -> list[dict[str, Any]]:
+    from backend.signals.engine import list_signals
+
+    with session_scope() as session:
+        return list_signals(session, limit=limit)
+
+
+@app.post("/api/signals/generate")
+def signals_generate() -> dict[str, Any]:
+    """Signal-Lauf manuell anstoßen (normalerweise Teil des täglichen Updates)."""
+    from backend.signals.engine import generate_signals
+
+    with session_scope() as session:
+        return generate_signals(session)
+
+
+@app.get("/api/picks")
+def picks() -> dict[str, Any]:
+    from backend.signals.picker import picks_overview
+
+    with session_scope() as session:
+        return picks_overview(session)
+
+
+@app.post("/api/picks/run")
+def picks_run() -> dict[str, Any]:
+    """Wochen-Picks manuell anstoßen (normalerweise montags per Scheduler)."""
+    from backend.signals.picker import run_weekly_picks
+
+    with session_scope() as session:
+        return run_weekly_picks(session)
+
+
+@app.get("/api/ai/budget")
+def ai_budget() -> dict[str, Any]:
+    """Tagesbudget-Status der Claude-API (Hard-Stop in config/ai.yaml)."""
+    from backend.ai.budget import budget_status
+
+    with session_scope() as session:
+        return budget_status(session)
+
+
 @app.get("/api/ledger/verify")
 def ledger_verify() -> dict[str, Any]:
     """Rechnet die komplette Hash-Chain nach — die Glaubwürdigkeitsprüfung."""

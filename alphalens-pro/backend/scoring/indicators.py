@@ -88,6 +88,28 @@ def risk_adjusted_return(closes: list[float], periods: int) -> float | None:
     return ret / vol
 
 
+def atr(
+    highs: list[float], lows: list[float], closes: list[float], period: int = 14
+) -> float | None:
+    """Average True Range nach Wilder: TR = max(H-L, |H-C_prev|, |L-C_prev|),
+    geglättet über `period`. Basis für Stop-Loss-Abstände der Signal-Engine."""
+    n = min(len(highs), len(lows), len(closes))
+    if n < period + 1:
+        return None
+    true_ranges: list[float] = []
+    for i in range(1, n):
+        prev_close = closes[i - 1]
+        true_ranges.append(max(
+            highs[i] - lows[i],
+            abs(highs[i] - prev_close),
+            abs(lows[i] - prev_close),
+        ))
+    value = sum(true_ranges[:period]) / period
+    for tr in true_ranges[period:]:
+        value = (value * (period - 1) + tr) / period
+    return value
+
+
 def avg_dollar_volume(closes: list[float], volumes: list[float], window: int = 60) -> float | None:
     """Durchschnittliches Handelsvolumen in Geldeinheiten (Liquiditätsmaß)."""
     n = min(len(closes), len(volumes))
