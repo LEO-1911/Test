@@ -9,6 +9,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from backend.data import store
@@ -158,6 +159,72 @@ def market_state() -> list[dict[str, Any]]:
              "as_of": r.as_of.isoformat()}
             for r in seen.values()
         ]
+
+
+class BacktestRunRequest(BaseModel):
+    strategy: str = "score_ranking"          # score_ranking | signal_setup
+    start: date
+    end: date | None = None
+    top_n: int = 10
+    rebalance: str = "monthly"               # weekly | monthly | quarterly
+    signal_type: str = "breakout"
+    cost_bps_per_side: float | None = None   # None = Default aus costs.yaml
+    initial_capital: float = 100_000.0
+    stake_pct: float = 10.0
+    max_tickers: int = 50
+    n_folds: int = 4
+    name: str = ""
+    save: bool = True
+
+
+@app.post("/api/backtest/run")
+def backtest_run(req: BacktestRunRequest) -> dict[str, Any]:
+    """Backtest ausführen (kann bei großem Universum einige Minuten dauern).
+    Ergebnis enthält IMMER Caveats-Panel und Overfitting-Warnungen."""
+    from backend.backtest.engine import run_score_ranking, run_signal_setup, save_report
+
+    with session_scope() as session:
+        end = req.end or date.today()
+        try:
+            if req.strategy == "score_ranking":
+                result = run_score_ranking(
+                    session, start=req.start, end=end, top_n=req.top_n,
+                    rebalance=req.rebalance, cost_bps_per_side=req.cost_bps_per_side,
+                    initial_capital=req.initial_capital,
+                )
+            elif req.strategy == "signal_setup":
+                result = run_signal_setup(
+                    session, signal_type=req.signal_type, start=req.start, end=end,
+                    cost_bps_per_side=req.cost_bps_per_side, stake_pct=req.stake_pct,
+                    max_tickers=req.max_tickers, n_folds=req.n_folds,
+                )
+            else:
+                raise HTTPException(status_code=400,
+                                    detail=f"Unbekannte Strategie {req.strategy!r}")
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if req.save:
+            result["report_id"] = save_report(session, req.name, result)
+        return result
+
+
+@app.get("/api/backtest/reports")
+def backtest_reports() -> list[dict[str, Any]]:
+    from backend.backtest.engine import list_reports
+
+    with session_scope() as session:
+        return list_reports(session)
+
+
+@app.get("/api/backtest/reports/{report_id}")
+def backtest_report(report_id: int) -> dict[str, Any]:
+    from backend.backtest.engine import get_report
+
+    with session_scope() as session:
+        report = get_report(session, report_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail=f"Report {report_id} nicht gefunden")
+        return report
 
 
 @app.get("/api/regime")

@@ -161,6 +161,23 @@ event.listen(
 )
 
 
+class BacktestReportRow(Base):
+    """Gespeicherte Backtest-Reports: Config, Kennzahlen (mit Konfidenzintervallen),
+    Equity-Kurve und das verpflichtende Caveats-Panel — reproduzierbar und ehrlich."""
+
+    __tablename__ = "backtest_reports"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    name: Mapped[str] = mapped_column(String, default="")
+    strategy: Mapped[str] = mapped_column(String)
+    config_json: Mapped[str] = mapped_column(String)
+    metrics_json: Mapped[str] = mapped_column(String)
+    equity_json: Mapped[str] = mapped_column(String)   # [[iso-date, wert], ...]
+    caveats_json: Mapped[str] = mapped_column(String)  # Liste von Klartext-Hinweisen
+    warnings_json: Mapped[str] = mapped_column(String, default="[]")  # Overfitting etc.
+
+
 class AiUsageRow(Base):
     """Kosten-Buchführung jedes Claude-API-Aufrufs — Grundlage des Tagesbudget-
     Hard-Stops (config/ai.yaml). Wird im UI unter Einstellungen angezeigt."""

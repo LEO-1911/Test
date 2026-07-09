@@ -6,6 +6,7 @@ import InstrumentPage from "./pages/InstrumentPage";
 import TrackRecordPage from "./pages/TrackRecordPage";
 import SignalsPage from "./pages/SignalsPage";
 import PickerPage from "./pages/PickerPage";
+import BacktestPage from "./pages/BacktestPage";
 
 const NAV_ITEMS = [
   { id: "brief", label: "Daily Brief", milestone: "MS11" },
@@ -15,7 +16,7 @@ const NAV_ITEMS = [
   { id: "markets", label: "Märkte", milestone: null },
   { id: "whales", label: "Whales", milestone: "MS9" },
   { id: "earnings", label: "Earnings", milestone: "MS8" },
-  { id: "backtest", label: "Backtest", milestone: "MS6" },
+  { id: "backtest", label: "Backtest", milestone: null },
   { id: "paper", label: "Paper-Portfolio", milestone: "MS7" },
   { id: "track", label: "Track Record", milestone: null },
   { id: "chat", label: "Chat-Agent", milestone: "MS10" },
@@ -97,6 +98,8 @@ export default function App() {
     content = <SignalsPage onSelect={openDetail} />;
   } else if (active === "picker") {
     content = <PickerPage onSelect={openDetail} />;
+  } else if (active === "backtest") {
+    content = <BacktestPage />;
   } else {
     content = <ComingSoon milestone={current.milestone ?? ""} />;
   }
