@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ACI · IR Hub — Adaptive Corporate Intelligence (MVP)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ Sidebar ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">ACI</div>
+        <div>
+          <div class="brand-name">Adaptive Corporate Intelligence</div>
+          <div class="brand-sub">IR Hub · Nordwerk SE</div>
+        </div>
+      </div>
+
+      <div class="nav-group-label">Employee level</div>
+      <nav>
+        <button class="nav-item active" data-view="briefing">
+          <span class="nav-ico">☀</span> Morning Briefing
+          <span class="nav-badge" id="badge-briefing"></span>
+        </button>
+        <button class="nav-item" data-view="inbox">
+          <span class="nav-ico">✉</span> Inbox Agent
+          <span class="nav-badge" id="badge-inbox"></span>
+        </button>
+        <button class="nav-item" data-view="deadlines">
+          <span class="nav-ico">⏱</span> Deadlines
+          <span class="nav-badge" id="badge-deadlines"></span>
+        </button>
+      </nav>
+
+      <div class="nav-group-label">Leadership level</div>
+      <nav>
+        <button class="nav-item" data-view="dashboard">
+          <span class="nav-ico">▦</span> Dashboard &amp; Scenario Lab
+        </button>
+      </nav>
+
+      <div class="nav-group-label">Common foundation</div>
+      <nav>
+        <button class="nav-item" data-view="memory">
+          <span class="nav-ico">◈</span> Decision Memory
+        </button>
+        <button class="nav-item" data-view="model">
+          <span class="nav-ico">⚙</span> Company Model
+          <span class="nav-badge" id="badge-model"></span>
+        </button>
+        <button class="nav-item" data-view="audit">
+          <span class="nav-ico">≡</span> Audit Trail
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="ai-status"><span class="pulse"></span> Agents active · read-only connectors</div>
+        <button class="reset-btn" id="reset-demo" title="Reset all demo state">Reset demo data</button>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="view-title">Morning Briefing</h1>
+          <div class="topbar-sub" id="view-sub"></div>
+        </div>
+        <div class="topbar-right">
+          <span class="chip chip-muted" id="today-chip"></span>
+        </div>
+      </header>
+
+      <section id="view-briefing" class="view active"></section>
+      <section id="view-inbox" class="view"></section>
+      <section id="view-deadlines" class="view"></section>
+      <section id="view-dashboard" class="view"></section>
+      <section id="view-memory" class="view"></section>
+      <section id="view-model" class="view"></section>
+      <section id="view-audit" class="view"></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
